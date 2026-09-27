@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
-import { useCart } from '../lib/cart-context.js'
 import { formatPrice } from '../lib/formatPrice.js'
+import { useCartStore } from '../store/useCartStore.js'
 import CartIcon from './CartIcon.jsx'
 
 export default function ProductCard({ product }) {
-  const { addItem, lastAddedId } = useCart()
+  const addItem = useCartStore((state) => state.addItem)
+  const lastAddedId = useCartStore((state) => state.lastAddedId)
   const justAdded = lastAddedId === product.id
 
   return (

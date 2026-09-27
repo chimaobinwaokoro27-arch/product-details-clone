@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react'
-import { useCart } from '../lib/cart-context.js'
 import { formatPrice } from '../lib/formatPrice.js'
+import {
+  selectIsEmpty,
+  selectItemCount,
+  selectSubtotal,
+  useCartStore,
+} from '../store/useCartStore.js'
 import CartIcon from './CartIcon.jsx'
 
 export default function CartDrawer() {
   const [open, setOpen] = useState(false)
-  const { items, itemCount, subtotal, isEmpty, increment, decrement, removeItem, clearCart } =
-    useCart()
+  const items = useCartStore((state) => state.items)
+  const itemCount = useCartStore(selectItemCount)
+  const subtotal = useCartStore(selectSubtotal)
+  const isEmpty = useCartStore(selectIsEmpty)
+  const increment = useCartStore((state) => state.increment)
+  const decrement = useCartStore((state) => state.decrement)
+  const removeItem = useCartStore((state) => state.removeItem)
+  const clearCart = useCartStore((state) => state.clearCart)
 
   useEffect(() => {
     if (!open) return undefined

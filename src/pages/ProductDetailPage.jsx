@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useCart } from '../lib/cart-context.js'
+import { useCartStore } from '../store/useCartStore.js'
 import { formatPrice } from '../lib/formatPrice.js'
 import CartIcon from '../components/CartIcon.jsx'
 
@@ -17,7 +17,8 @@ function SpecRow({ label, value }) {
 
 export default function ProductDetailPage() {
   const { id } = useParams()
-  const { addItem, lastAddedId } = useCart()
+  const addItem = useCartStore((state) => state.addItem)
+  const lastAddedId = useCartStore((state) => state.lastAddedId)
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
