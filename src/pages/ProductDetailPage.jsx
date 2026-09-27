@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useCart } from '../lib/cart-context.js'
 import { formatPrice } from '../lib/formatPrice.js'
@@ -17,13 +17,11 @@ function SpecRow({ label, value }) {
 
 export default function ProductDetailPage() {
   const { id } = useParams()
-  const { addItem } = useCart()
+  const { addItem, lastAddedId } = useCart()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
-  const [addedProductId, setAddedProductId] = useState(null)
-  const addedTimer = useRef(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -60,17 +58,6 @@ export default function ProductDetailPage() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [id])
-
-  useEffect(() => {
-    return () => clearTimeout(addedTimer.current)
-  }, [])
-
-  function handleAddToCart() {
-    addItem(product)
-    setAddedProductId(product.id)
-    clearTimeout(addedTimer.current)
-    addedTimer.current = setTimeout(() => setAddedProductId(null), 1600)
-  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:px-8 sm:py-16">
@@ -151,11 +138,11 @@ export default function ProductDetailPage() {
 
             <button
               type="button"
-              onClick={handleAddToCart}
+              onClick={() => addItem(product)}
               className="mt-9 inline-flex items-center gap-3 rounded-full bg-clay-600 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-clay-700"
             >
               <CartIcon className="h-4 w-4" />
-              {addedProductId === product.id ? 'Added to cart' : 'Add to cart'}
+              {lastAddedId === product.id ? 'Added to cart' : 'Add to cart'}
             </button>
 
             <dl className="mt-12 border-t border-bone-200 pt-2">

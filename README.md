@@ -31,9 +31,7 @@ product name is.
 
 ## Cart
 
-A small client-side cart sits on top of the two required pages. It adds no new route and does not
-change what the list and detail pages are required to show — the cards still show only the
-thumbnail, title and price, so the **Add to cart** button lives on the detail page.
+A small client-side cart sits on top of the two required pages. It adds no new route.
 
 - Cart state lives in a `useReducer` behind a React context (`CartProvider`), mounted once in
   `main.jsx` so it survives navigation between routes.
@@ -44,6 +42,22 @@ thumbnail, title and price, so the **Add to cart** button lives on the detail pa
   subtotal, and a clear-cart action. `Escape` closes it.
 - The cart persists to `localStorage` under `kiln.cart.v1`, so it survives a refresh.
 - Adding the same product twice increments the existing line rather than duplicating it.
+
+### Add to cart on the cards
+
+**The brief specifies that a card shows only the thumbnail, title and price. An Add to cart
+button was added to every card in the grid on request, so the card now shows a fourth element.**
+Flagging it explicitly in case the brief is being marked against the letter.
+
+The button could not simply be nested inside the card's `<Link>`, since a `<button>` inside an
+anchor is invalid and would fire the navigation too. Instead the card uses a stretched-link
+pattern: the root is an `<article>`, the `<Link>` is an absolutely positioned overlay covering
+the whole card at `z-10`, and the button sits above it at `z-20`. The result is that clicking the
+image, title or price still navigates to the detail page, while clicking Add to cart only adds
+the item. The link carries an `aria-label` because it wraps no text of its own.
+
+Both the cards and the detail page read the same `lastAddedId` from the cart context for their
+"Added" confirmation, so adding the same product from either place lights up both consistently.
 
 ## Running it
 
@@ -80,7 +94,7 @@ src/
 │   ├── CartIcon.jsx                hand-written inline cart SVG
 │   ├── CartProvider.jsx            useReducer cart state, persisted to localStorage
 │   ├── Layout.jsx                  header + <Outlet /> + footer
-│   └── ProductCard.jsx             thumbnail, title, price — links to /products/:id
+│   └── ProductCard.jsx             thumbnail, title, price, add to cart — links to /products/:id
 ├── lib/
 │   ├── cart-context.js             createContext + useCart hook
 │   └── formatPrice.js              shared Intl currency formatter

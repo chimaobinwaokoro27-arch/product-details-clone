@@ -11,6 +11,7 @@ function CardSkeleton() {
         <div className="h-4 w-3/4 animate-pulse rounded bg-bone-100" />
         <div className="h-6 w-16 animate-pulse rounded bg-bone-100" />
       </div>
+      <div className="mt-4 h-[38px] w-28 animate-pulse rounded-full bg-bone-100" />
     </div>
   )
 }

@@ -1,7 +1,8 @@
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { CartContext } from '../lib/cart-context.js'
 
 const STORAGE_KEY = 'kiln.cart.v1'
+const ADDED_FEEDBACK_MS = 1600
 
 function readStoredCart() {
   try {
@@ -64,20 +65,35 @@ function cartReducer(items, action) {
 
 export default function CartProvider({ children }) {
   const [items, dispatch] = useReducer(cartReducer, undefined, readStoredCart)
+  const [lastAddedId, setLastAddedId] = useState(null)
+  const addedTimer = useRef(null)
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items])
 
+  useEffect(() => {
+    return () => clearTimeout(addedTimer.current)
+  }, [])
+
   const itemCount = items.reduce((total, item) => total + item.quantity, 0)
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
+
+  function addItem(product) {
+    dispatch({ type: 'add', product })
+
+    setLastAddedId(product.id)
+    clearTimeout(addedTimer.current)
+    addedTimer.current = setTimeout(() => setLastAddedId(null), ADDED_FEEDBACK_MS)
+  }
 
   const value = {
     items,
     itemCount,
     subtotal,
     isEmpty: items.length === 0,
-    addItem: (product) => dispatch({ type: 'add', product }),
+    lastAddedId,
+    addItem,
     increment: (id) => dispatch({ type: 'increment', id }),
     decrement: (id) => dispatch({ type: 'decrement', id }),
     removeItem: (id) => dispatch({ type: 'remove', id }),
