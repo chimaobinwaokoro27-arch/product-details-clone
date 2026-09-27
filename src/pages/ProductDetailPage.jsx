@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useCartStore } from '../store/useCartStore.js'
+import { useProductDetailStore } from '../store/useProductDetailStore.js'
 import { formatPrice } from '../lib/formatPrice.js'
 import CartIcon from '../components/CartIcon.jsx'
-
-const API_BASE = 'https://dummyjson.com/products'
 
 function SpecRow({ label, value }) {
   return (
@@ -19,42 +18,21 @@ export default function ProductDetailPage() {
   const { id } = useParams()
   const addItem = useCartStore((state) => state.addItem)
   const lastAddedId = useCartStore((state) => state.lastAddedId)
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [attempt, setAttempt] = useState(0)
+
+  const product = useProductDetailStore((state) => state.product)
+  const loading = useProductDetailStore((state) => state.loading)
+  const error = useProductDetailStore((state) => state.error)
+  const attempt = useProductDetailStore((state) => state.attempt)
+  const loadProduct = useProductDetailStore((state) => state.loadProduct)
+  const retry = useProductDetailStore((state) => state.retry)
 
   useEffect(() => {
     const controller = new AbortController()
 
-    async function loadProduct() {
-      setLoading(true)
-      setError('')
-      setProduct(null)
-
-      try {
-        const response = await fetch(`${API_BASE}/${id}`, { signal: controller.signal })
-
-        if (!response.ok) {
-          throw new Error(`The server responded with ${response.status}.`)
-        }
-
-        // /products/:id is NOT wrapped — the response IS the product.
-        const data = await response.json()
-        setProduct(data)
-        document.title = `${data.title} — Kiln`
-      } catch (err) {
-        if (err.name === 'AbortError') return
-        setError(err.message || 'Something went wrong.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadProduct()
+    loadProduct(id, controller.signal)
 
     return () => controller.abort()
-  }, [id, attempt])
+  }, [id, attempt, loadProduct])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -102,7 +80,7 @@ export default function ProductDetailPage() {
           <p className="mt-2 text-sm leading-relaxed text-stone-600">{error}</p>
           <button
             type="button"
-            onClick={() => setAttempt((n) => n + 1)}
+            onClick={retry}
             className="mt-6 rounded-full bg-clay-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-clay-700"
           >
             Try again
