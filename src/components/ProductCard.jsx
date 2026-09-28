@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../lib/formatPrice.js'
 import { useCartStore } from '../store/useCartStore.js'
+import { useCartDrawerStore } from '../store/useCartDrawerStore.js'
 import CartIcon from './CartIcon.jsx'
 
 export default function ProductCard({ product }) {
   const addItem = useCartStore((state) => state.addItem)
   const lastAddedId = useCartStore((state) => state.lastAddedId)
+  const openDrawer = useCartDrawerStore((state) => state.openDrawer)
   const justAdded = lastAddedId === product.id
+
+  // Add, then reveal the cart so the item just added can be seen.
+  const handleAdd = () => {
+    addItem(product)
+    openDrawer()
+  }
 
   return (
     <article className="group relative flex flex-col">
@@ -32,7 +40,7 @@ export default function ProductCard({ product }) {
 
       <button
         type="button"
-        onClick={() => addItem(product)}
+        onClick={handleAdd}
         aria-label={`Add ${product.title} to cart`}
         className={`relative z-20 mt-4 inline-flex w-fit items-center gap-2 rounded-full border px-5 py-2.5 text-xs font-medium transition-colors ${
           justAdded

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useCartStore } from '../store/useCartStore.js'
+import { useCartDrawerStore } from '../store/useCartDrawerStore.js'
 import { useProductDetailStore } from '../store/useProductDetailStore.js'
 import { formatPrice } from '../lib/formatPrice.js'
 import CartIcon from '../components/CartIcon.jsx'
@@ -18,6 +19,13 @@ export default function ProductDetailPage() {
   const { id } = useParams()
   const addItem = useCartStore((state) => state.addItem)
   const lastAddedId = useCartStore((state) => state.lastAddedId)
+  const openDrawer = useCartDrawerStore((state) => state.openDrawer)
+
+  // Add, then reveal the cart so the item just added can be seen.
+  const handleAdd = () => {
+    addItem(product)
+    openDrawer()
+  }
 
   const product = useProductDetailStore((state) => state.product)
   const loading = useProductDetailStore((state) => state.loading)
@@ -117,7 +125,7 @@ export default function ProductDetailPage() {
 
             <button
               type="button"
-              onClick={() => addItem(product)}
+              onClick={handleAdd}
               className="mt-9 inline-flex items-center gap-3 rounded-full bg-clay-600 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-clay-700"
             >
               <CartIcon className="h-4 w-4" />

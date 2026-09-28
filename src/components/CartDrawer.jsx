@@ -49,26 +49,19 @@ export default function CartDrawer() {
         )}
       </button>
 
+      {/* Deliberately not modal: nothing is dimmed or blurred behind the panel, so
+          the rest of the page stays in view and usable while the cart is open. This
+          layer ignores pointer input; only the panel itself accepts it. Dismiss with
+          the Close button or Escape. */}
       <div
-        className={`fixed inset-0 z-50 transition-opacity duration-300 ${
-          open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-        }`}
+        className="pointer-events-none fixed inset-0 z-50"
         role="dialog"
-        aria-modal="true"
         aria-label="Shopping cart"
         aria-hidden={!open}
       >
-        <button
-          type="button"
-          tabIndex={open ? 0 : -1}
-          aria-label="Close cart"
-          onClick={closeDrawer}
-          className="absolute inset-0 bg-stone-900/25 backdrop-blur-[2px]"
-        />
-
         <div
           className={`absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-bone-50 shadow-2xl transition-transform duration-300 ease-out ${
-            open ? 'translate-x-0' : 'translate-x-full'
+            open ? 'pointer-events-auto translate-x-0' : 'pointer-events-none translate-x-full'
           }`}
         >
           <div className="flex items-center justify-between border-b border-bone-200 px-6 py-5">

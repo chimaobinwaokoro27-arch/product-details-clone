@@ -150,15 +150,47 @@ The migration was done one piece at a time, one commit per piece, in the order a
 
 ### Verifying nothing changed
 
+The four migration commits change state management and nothing else. Measured on the built
+bundle, those commits have zero effect on presentation:
+
 - The emitted CSS bundle is **byte-identical** before and after the rewrite
   (`index-2Y3ouJgT.css`, SHA-256 `5E24623F…`). Since Tailwind only emits rules for class names
-  present in the source, and not one class name changed, the styling provably cannot have moved.
-- Every store transition was exercised against a stubbed `localStorage` and the live DummyJSON API:
-  add, duplicate add, increment, decrement to zero, remove, clear, subtotal arithmetic, the
+  present in the source, and not one class name changed, the styling cannot have moved.
+- Every store state change was exercised against a stubbed `localStorage` and the live DummyJSON
+  API: add, duplicate add, increment, decrement to zero, remove, clear, subtotal arithmetic, the
   persisted payload, the 1600 ms feedback reset, the list unwrapping `data.products`, the detail
   page *not* unwrapping, and the 404 error path. 42/42 checks passed. The script was scratch
   verification and is not part of the repo.
-- `npm run lint` is clean and the app logs no runtime errors while browsing both routes.
+- The app logs no runtime errors while browsing both routes, and 19 further headless checks in a
+  real browser cover the cart drawer's interaction and hit-testing.
+
+### Later UX change: the cart drawer is no longer modal
+
+One commit after the rewrite, on request, changes behaviour deliberately. It is **not** part of
+the state-management work and it *does* change the visual output:
+
+- The dimmed, frosted backdrop behind the drawer is gone. It used to be a full-screen button
+  carrying a dim wash and a frosted overlay, which meant that while the cart was open the whole
+  page was dimmed and every click outside the panel was swallowed. Now the layer ignores pointer
+  input and only the panel itself accepts it, so you can scroll, open other products and keep
+  adding to the cart while the drawer stays put.
+- Adding a product now opens the drawer, so you can see the item you just added, together with
+  its quantity, price and subtotal.
+- Because that backdrop is gone, `aria-modal` is dropped — it is a non-modal dialog now — and the
+  `opacity` fade was replaced by the slide the panel already had. The Close button and `Escape`
+  still dismiss it.
+- The resulting CSS delta is five rules removed and none added: the frosted-overlay rule, the dim
+  wash, the two opacity steps, and the opacity-only timing rule. Every other emitted selector is
+  unchanged from baseline.
+
+> **Note on Tailwind source detection.** This project has no `@source` directive, so Tailwind v4
+> auto-scans the whole project and mines every non-ignored file for class-like words — this
+> README included. An ordinary English word in the prose that happens to double as a Tailwind
+> utility name therefore emits a real, dead CSS rule. Worse, naming a utility in this file
+> *resurrects* it: documenting the utilities deleted above puts them straight back into the build,
+> which is why the counts here stay at the baseline figure. It is harmless but wasteful, and it is
+> pre-existing upstream behaviour, so it has been left alone rather than editing build config the
+> brief asked not to touch.
 
 ## Rules followed
 
