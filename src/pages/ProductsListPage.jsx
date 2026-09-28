@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useProductListStore } from '../store/useProductListStore.js'
 import ProductCard from '../components/ProductCard.jsx'
-
-const PRODUCTS_URL = 'https://dummyjson.com/products?limit=12'
 
 function CardSkeleton() {
   return (
@@ -17,41 +16,20 @@ function CardSkeleton() {
 }
 
 export default function ProductsListPage() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [attempt, setAttempt] = useState(0)
+  const products = useProductListStore((state) => state.products)
+  const loading = useProductListStore((state) => state.loading)
+  const error = useProductListStore((state) => state.error)
+  const attempt = useProductListStore((state) => state.attempt)
+  const loadProducts = useProductListStore((state) => state.loadProducts)
+  const retry = useProductListStore((state) => state.retry)
 
   useEffect(() => {
     const controller = new AbortController()
 
-    async function loadProducts() {
-      setLoading(true)
-      setError('')
-      document.title = 'Kiln — Product Catalogue'
-
-      try {
-        const response = await fetch(PRODUCTS_URL, { signal: controller.signal })
-
-        if (!response.ok) {
-          throw new Error(`The server responded with ${response.status}.`)
-        }
-
-        // /products is wrapped: { products, total, skip, limit }
-        const data = await response.json()
-        setProducts(data.products)
-      } catch (err) {
-        if (err.name === 'AbortError') return
-        setError(err.message || 'Something went wrong.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadProducts()
+    loadProducts(controller.signal)
 
     return () => controller.abort()
-  }, [attempt])
+  }, [attempt, loadProducts])
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 sm:px-8 sm:py-20">
@@ -91,7 +69,7 @@ export default function ProductsListPage() {
             <p className="mt-2 text-sm leading-relaxed text-stone-600">{error}</p>
             <button
               type="button"
-              onClick={() => setAttempt((n) => n + 1)}
+              onClick={retry}
               className="mt-6 rounded-full bg-clay-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-clay-700"
             >
               Try again

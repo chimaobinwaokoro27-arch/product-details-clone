@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { formatPrice } from '../lib/formatPrice.js'
+import { useCartDrawerStore } from '../store/useCartDrawerStore.js'
 import {
   selectIsEmpty,
   selectItemCount,
@@ -9,7 +10,9 @@ import {
 import CartIcon from './CartIcon.jsx'
 
 export default function CartDrawer() {
-  const [open, setOpen] = useState(false)
+  const open = useCartDrawerStore((state) => state.isOpen)
+  const openDrawer = useCartDrawerStore((state) => state.openDrawer)
+  const closeDrawer = useCartDrawerStore((state) => state.closeDrawer)
   const items = useCartStore((state) => state.items)
   const itemCount = useCartStore(selectItemCount)
   const subtotal = useCartStore(selectSubtotal)
@@ -23,18 +26,18 @@ export default function CartDrawer() {
     if (!open) return undefined
 
     function onKeyDown(event) {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key === 'Escape') closeDrawer()
     }
 
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [open])
+  }, [open, closeDrawer])
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={openDrawer}
         className="relative -mr-1 p-1 text-stone-600 transition-colors hover:text-clay-600"
         aria-label={`Open cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`}
       >
@@ -59,7 +62,7 @@ export default function CartDrawer() {
           type="button"
           tabIndex={open ? 0 : -1}
           aria-label="Close cart"
-          onClick={() => setOpen(false)}
+          onClick={closeDrawer}
           className="absolute inset-0 bg-stone-900/25 backdrop-blur-[2px]"
         />
 
@@ -73,7 +76,7 @@ export default function CartDrawer() {
             <button
               type="button"
               tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
+              onClick={closeDrawer}
               className="text-sm text-stone-500 transition-colors hover:text-clay-600"
             >
               Close
